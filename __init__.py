@@ -15,6 +15,7 @@ from . import tinycss
 from aqt.reviewer import Reviewer
 from anki.utils import stripHTML
 from aqt import gui_hooks, mw
+from aqt.webview import AnkiWebView
 
 from .code_formatter import *
 from .code_compare import *
@@ -23,10 +24,24 @@ from .code_compare import *
 NEWLINE_MARKER = "__typeboxnewline__"
 TAB_CHARACTER = "\t"
 TYPEBOX_PATTERN = r"\[\[typebox:(.*?)\]\]"
+typebox_language = "python"
 
 # Set up the typebox pattern for the Reviewer class
 Reviewer.typeboxAnsPat = TYPEBOX_PATTERN
+# AnkiWebView.handle_pycmd = handle_pycmd
+AnkiWebView.set_bridge_command(AnkiWebView.handle_pycmd)
 
+def handle_pycmd(self, cmd: str) -> None:
+    """Handle custom commands for the typebox input.
+    
+    Args:
+        cmd (str): The command to process
+    """
+    if cmd.startswith("set_typebox_language:"):
+        # Extract the language and update the global variable
+        language = cmd[len("set_typebox_language:"):]
+        typebox_language = language.strip()
+        return
 
 def typeboxAnsFilter(self, buf: str) -> str:
     """Main filter for handling typebox input in both question and answer states.
@@ -113,6 +128,9 @@ def typeboxAnsQuestionFilter(self, buf: str) -> str:
         self.typeboxAnsPat,
         """
 <center>
+<label for="language">Language:</label>
+<input type="text" id="language" name="language" placeholder="Enter programming language (e.g. py, cpp, js)">
+<br><br>
 <textarea id=typeans class=textbox-input onkeydown="typeboxAns(event);" style="font-family: '%s'; font-size: %spx;"></textarea>
 </center>
 <script>
@@ -183,6 +201,9 @@ function typeboxAns(event) {
             textarea.selectionStart = textarea.selectionEnd = start + tabCharacter.length;
         }
     }
+    const languageInput = document.getElementById('language');
+    const language = languageInput.value;
+    // ... use language variable in remove_comments function ...
 }
 </script>
 """
@@ -215,8 +236,9 @@ def typeboxAnsAnswerFilter(self, buf: str) -> str:
         cor = double_backslashes(cor)
         given = double_backslashes(given)
 
-        given = remove_comments(given)
-        cor = remove_comments(cor)
+        language = self.web.eval("document.getElementById('language').value")
+        given = remove_comments(given, language)
+        cor = remove_comments(cor, language)
         cor = re.sub(r"(<pre>|</pre>)", "", cor)
 
         # Remove empty newlines for comparison and trim trailing whitespace
@@ -280,3 +302,4 @@ gui_hooks.reviewer_did_show_question.append(focusTypebox)
 Reviewer.typeAnsFilter = typeboxAnsFilter
 Reviewer.typeboxAnsQuestionFilter = typeboxAnsQuestionFilter
 Reviewer.typeboxAnsAnswerFilter = typeboxAnsAnswerFilter
+AnkiWebView.handle_pycmd = handle_pycmd
