@@ -24,24 +24,37 @@ from .code_compare import *
 NEWLINE_MARKER = "__typeboxnewline__"
 TAB_CHARACTER = "\t"
 TYPEBOX_PATTERN = r"\[\[typebox:(.*?)\]\]"
-typebox_language = "python"
-
+typebox_language = "none"
 # Set up the typebox pattern for the Reviewer class
 Reviewer.typeboxAnsPat = TYPEBOX_PATTERN
-# AnkiWebView.handle_pycmd = handle_pycmd
-AnkiWebView.set_bridge_command(AnkiWebView.handle_pycmd)
 
-def handle_pycmd(self, cmd: str) -> None:
-    """Handle custom commands for the typebox input.
-    
-    Args:
-        cmd (str): The command to process
-    """
-    if cmd.startswith("set_typebox_language:"):
-        # Extract the language and update the global variable
-        language = cmd[len("set_typebox_language:"):]
-        typebox_language = language.strip()
-        return
+from typing import Any, Tuple
+from aqt.gui_hooks import webview_did_receive_js_message
+from aqt.utils import showInfo
+
+def handle_pycmd(handled: Tuple[bool, Any], message: str, context: Any) -> Tuple[bool, Any]:
+    """Handle custom commands for the typebox input."""
+    try:
+        if not handled[0]:  # Only process if not already handled
+            if message.startswith("set_typebox_language:"):
+                language = message[len("set_typebox_language:"):]
+                normalized_lang = get_normalized_language(language)
+                if normalized_lang == 'invalid':
+                    # Send alert back to UI
+                    mw.reviewer.web.eval("""
+                        alert('Invalid language selected. Please enter a valid language code (py, js, java, cpp, c#) or "none" to disable programming-specific formatting. Defaulting to "none".');
+                    """)
+                    # showInfo("Language not supported. Defaulting to None.")
+                    normalized_lang = 'none' 
+                global typebox_language
+                typebox_language = normalized_lang
+                return (True, None)
+    except Exception as e:
+        print(f"Error in handle_pycmd: {e}")
+    return handled
+
+# Register the handler
+webview_did_receive_js_message.append(handle_pycmd)
 
 def typeboxAnsFilter(self, buf: str) -> str:
     """Main filter for handling typebox input in both question and answer states.
@@ -101,9 +114,13 @@ def typeboxAnsQuestionFilter(self, buf: str) -> str:
     if not m:
         return buf
     fld = m.group(1)
+
     # loop through fields for a match
     self.typeCorrect = None
     fields = self.card.model()["flds"]
+    # language_field = next((f for f in fields if f["name"] == language_param), '')
+    # self.typebox_language = note[language_field["name"]] if language_field else None
+
     for f in fields:
         if f["name"] == fld:
             # get field value for correcting
@@ -128,40 +145,72 @@ def typeboxAnsQuestionFilter(self, buf: str) -> str:
         self.typeboxAnsPat,
         """
 <center>
-<label for="language">Language:</label>
-<input type="text" id="language" name="language" placeholder="Enter programming language (e.g. py, cpp, js)">
+<form id="languageForm" onsubmit="event.preventDefault(); updateLanguage();" class="language-form">
+    <label for="language">Language:</label>
+    <input type="text" id="language" name="language" placeholder="Enter programming language (e.g. py, cpp, js)">
+    <button type="submit">Submit</button>
+</form>
 <br><br>
 <textarea id=typeans class=textbox-input onkeydown="typeboxAns(event);" style="font-family: '%s'; font-size: %spx;"></textarea>
 </center>
 <script>
+if (typeof currentLanguage === 'undefined') {
+    // Define currentLanguage as a global variable
+    // Track current language setting
+    var currentLanguage = ''; // Define only if not already declared
+}
+
+function updateLanguage() {
+    const languageInput = document.getElementById('language');
+    const language = languageInput.value.trim().toLowerCase();
+    
+    if (language) {
+        currentLanguage = language; // Update the tracked language
+        pycmd("set_typebox_language:" + language);
+        // Clear the input field
+        languageInput.value = '';
+        // Provide visual feedback
+        const button = document.querySelector('.language-form button');
+        const originalText = button.textContent;
+        button.textContent = 'Updated!';
+        button.style.backgroundColor = '#4CAF50';
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.backgroundColor = '';
+        }, 1500);
+    }
+}
+
 function typeboxAns(event) {
     const textarea = document.getElementById('typeans');
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const text = textarea.value;
     const tabCharacter = "%s";
-    const newLine = `\n`;
+    const newLineMarker = `\n`;
     if (event.key == "Enter") {
         if (event.ctrlKey) {
             /* Ctrl+Enter submits the answer*/
             pycmd("ans");
         } else {
-            // Regular Enter: insert new line and preserve indentation
-            //event.preventDefault();
-            const lineStart = text.lastIndexOf(newLineMarker, start - 1) + 1;
-            let indent = '';
-            for (let i = lineStart; i < start; i++) {
-                const currentChar = text[i];
-                if (currentChar === tabCharacter || currentChar === ' ') {
-                    indent += currentChar;
-                } else {
-                    break;
+            if (currentLanguage !== 'none' && currentLanguage !== '') {
+                // Regular Enter: insert new line and preserve indentation
+                //event.preventDefault();
+                const lineStart = text.lastIndexOf(newLineMarker, start - 1) + 1;
+                let indent = '';
+                for (let i = lineStart; i < start; i++) {
+                    const currentChar = text[i];
+                    if (currentChar === tabCharacter || currentChar === ' ') {
+                        indent += currentChar;
+                    } else {
+                        break;
+                    }
                 }
-            }
-            if (indent) {
-                event.preventDefault(); // Prevent default newline
-                textarea.value = text.substring(0, start) + newLineMarker + indent + text.substring(start);
-                textarea.selectionStart = textarea.selectionEnd = start + 1 + indent.length;
+                if (indent) {
+                    event.preventDefault(); // Prevent default newline
+                    textarea.value = text.substring(0, start) + newLineMarker + indent + text.substring(start);
+                    textarea.selectionStart = textarea.selectionEnd = start + 1 + indent.length;
+                }
             }
         }
     } else if (event.key == "Tab") {
@@ -201,9 +250,6 @@ function typeboxAns(event) {
             textarea.selectionStart = textarea.selectionEnd = start + tabCharacter.length;
         }
     }
-    const languageInput = document.getElementById('language');
-    const language = languageInput.value;
-    // ... use language variable in remove_comments function ...
 }
 </script>
 """
@@ -212,6 +258,7 @@ function typeboxAns(event) {
     )
 
 
+    
 def typeboxAnsAnswerFilter(self, buf: str) -> str:
     """Filter for handling typebox input in the answer state.
     
@@ -232,11 +279,12 @@ def typeboxAnsAnswerFilter(self, buf: str) -> str:
         cor = self.mw.col.media.strip(self.typeCorrect)
         cor = re.sub(r"(<div>[\s\S]*</div>|<br>|\r\n)", r"\n", cor)
         given = re.sub(r"(\r\n)", "\n", given)
+        cor = re.sub(r"&nbsp;", " ", cor)
         
         cor = double_backslashes(cor)
         given = double_backslashes(given)
 
-        language = self.web.eval("document.getElementById('language').value")
+        language = typebox_language
         given = remove_comments(given, language)
         cor = remove_comments(cor, language)
         cor = re.sub(r"(<pre>|</pre>)", "", cor)
@@ -302,4 +350,3 @@ gui_hooks.reviewer_did_show_question.append(focusTypebox)
 Reviewer.typeAnsFilter = typeboxAnsFilter
 Reviewer.typeboxAnsQuestionFilter = typeboxAnsQuestionFilter
 Reviewer.typeboxAnsAnswerFilter = typeboxAnsAnswerFilter
-AnkiWebView.handle_pycmd = handle_pycmd

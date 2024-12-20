@@ -1,35 +1,79 @@
 import re
 
-def remove_comments(text, language='python'):
-    """Remove comments from text based on language-specific patterns."""
+# Language aliases for comment patterns
+LANGUAGE_ALIASES = {
+    'py': 'python',
+    'python': 'python',
+    'js': 'javascript',
+    'javascript': 'javascript',
+    'ts': 'typescript',
+    'typescript': 'typescript',
+    'java': 'java',
+    'cpp': 'cpp',
+    'c++': 'cpp',
+    'c#': 'csharp',
+    'csharp': 'csharp',
+    'none': 'none'
+}
+
+def get_normalized_language(lang):
+    """Normalize language input to standard form."""
+    return LANGUAGE_ALIASES.get(lang, 'invalid')
+
+def remove_comments(text, language='none'):
+    """
+    Remove comments from text based on language-specific patterns.
+
+    Parameters:
+        text (str): The text from which comments should be removed.
+        language (str): The programming language of the text. Defaults to 'python'.
+            Supported languages are 'python', 'javascript', 'java', 'cpp', and 'csharp'.
+    Returns:
+        str: A new string with all comments removed.
+
+    Notes:
+        This function uses regular expressions to match comments in the given text.
+        Language-specific comment patterns are stored in a dictionary, with the language
+        name as the key and a list of tuples as the value. Each tuple contains a regular
+        expression pattern to match a comment and a set of flags to apply to the pattern.
+
+        The function first retrieves the list of patterns for the given language from the
+        dictionary, or defaults to Python if the language is not found. It then iterates
+        over the patterns, replacing each comment with an empty string using the re.sub()
+        function. Finally, the function returns the text with all comments removed.
+    """
+    if language == 'none':
+        return text
+
     # Language-specific comment patterns
     comment_patterns = {
         'python': [
             # Single-line comment pattern: captures # and everything until newline marker
             (fr'#.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
             # Multiline comment pattern for ''' and """ with newline marker support
-            (fr'(\'\'\'[\s\S]*\'\'\'|\"\"\"[\s\S]*\"\"\")', re.MULTILINE)
+            (fr'(\'\'\'.*\'\'\'|\"\"\".*\"\"\")', re.DOTALL)
         ],
         'javascript': [
-            (fr'//.*?(?=(?<!\\)\\n|$)', re.MULTILINE),
-            (fr'(/\*.*\*/)', re.MULTILINE)
+            (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
+            (fr'(/\*.*\*/)', re.DOTALL)
         ],
         'java': [
-            (fr'//.*?(?=(?<!\\)\\n|$)', re.MULTILINE),
-            (fr'(/\*.*\*/)', re.MULTILINE)
+            (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
+            (fr'(/\*.*\*/)', re.DOTALL)
         ],
         'cpp': [
-            (fr'//.*?(?=(?<!\\)\\n|$)', re.MULTILINE),
-            (fr'(/\*.*\*/)', re.MULTILINE)
+            (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
+            (fr'(/\*.*\*/)', re.DOTALL)
         ],
         'csharp': [
-            (fr'//.*?(?=(?<!\\)\\n|$)', re.MULTILINE),
-            (fr'(/\*.*\*/)', re.MULTILINE)
+            (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
+            (fr'(/\*.*\*/)', re.DOTALL)
         ],
     }
     
     # Default to python if language not found
-    patterns = comment_patterns.get(language.lower(), comment_patterns['python'])
+    # Should never need to default but just in case
+    patterns = comment_patterns.get(language, comment_patterns['python'])
     
     # Remove comments by replacing them with an empty string
     for pattern, flags in patterns:
