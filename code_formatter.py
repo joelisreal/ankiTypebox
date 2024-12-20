@@ -9,10 +9,18 @@ LANGUAGE_ALIASES = {
     'ts': 'typescript',
     'typescript': 'typescript',
     'java': 'java',
+    'c': 'c',
     'cpp': 'cpp',
     'c++': 'cpp',
     'c#': 'csharp',
     'csharp': 'csharp',
+    'go': 'golang',
+    'golang': 'golang',
+    'rust': 'rust',
+    'swift': 'swift',
+    'kotlin': 'kotlin',
+    'kt': 'kotlin',
+    'php': 'php',
     'none': 'none'
 }
 
@@ -61,6 +69,10 @@ def remove_comments(text, language='none'):
             (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
             (fr'(/\*.*\*/)', re.DOTALL)
         ],
+        'c': [
+            (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
+            (fr'(/\*.*\*/)', re.DOTALL)
+        ],
         'cpp': [
             (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
             (fr'(/\*.*\*/)', re.DOTALL)
@@ -69,6 +81,26 @@ def remove_comments(text, language='none'):
             (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
             (fr'(/\*.*\*/)', re.DOTALL)
         ],
+        'golang': [
+            (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
+            (fr'(/\*.*\*/)', re.DOTALL)
+        ],
+        'rust': [
+            (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
+            (fr'(/\*.*\*/)', re.DOTALL)
+        ],
+        'swift': [
+            (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
+            (fr'(/\*.*\*/)', re.DOTALL)
+        ],
+        'kotlin': [
+            (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
+            (fr'(/\*.*\*/)', re.DOTALL)
+        ],
+        'php': [
+            (fr'//.*?(?=(?<!\\)\\n|$|</pre>)', re.MULTILINE),
+            (fr'(/\*.*\*/)', re.DOTALL)
+        ]
     }
     
     # Default to python if language not found
