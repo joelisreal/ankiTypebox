@@ -19,12 +19,13 @@ from aqt.webview import AnkiWebView
 
 from .code_formatter import *
 from .code_compare import *
+from .global_constants import *
+from .code_integration import *
 
-# Constants for text markers and special characters
-NEWLINE_MARKER = "__typeboxnewline__"
-TAB_CHARACTER = "\t"
-TYPEBOX_PATTERN = r"\[\[typebox:(.*?)\]\]"
+
 typebox_language = "none"
+typebox_min_height = 200
+typebox_max_height = 400
 # Set up the typebox pattern for the Reviewer class
 Reviewer.typeboxAnsPat = TYPEBOX_PATTERN
 
@@ -34,6 +35,7 @@ from aqt.utils import showInfo
 
 def handle_pycmd(handled: Tuple[bool, Any], message: str, context: Any) -> Tuple[bool, Any]:
     """Handle custom commands for the typebox input."""
+    global typebox_language, typebox_min_height, typebox_max_height
     try:
         if not handled[0]:  # Only process if not already handled
             if message.startswith("set_typebox_language:"):
@@ -41,14 +43,22 @@ def handle_pycmd(handled: Tuple[bool, Any], message: str, context: Any) -> Tuple
                 normalized_lang = get_normalized_language(language)
                 if normalized_lang == 'invalid':
                     # Send alert back to UI
-                    mw.reviewer.web.eval("""
-                        alert('Invalid language selected. Please enter a valid language code (py, js, java, cpp, c#) or "none" to disable programming-specific formatting. Defaulting to "none".');
+                    mw.reviewer.web.eval(f"""
+                        alert('Invalid language selected. Please enter a valid language code (py, js, java, c, cpp, c#, go, rust, swift, kotlin, php) or "none" to disable programming-specific formatting. Defaulting to {typebox_language}.');
                     """)
                     # showInfo("Language not supported. Defaulting to None.")
                     normalized_lang = 'none' 
-                global typebox_language
+                mw.reviewer.web.eval(f"currentLanguage = '{normalized_lang}';")
                 typebox_language = normalized_lang
                 return (True, None)
+            # Handle min_height and max_height updates
+            elif message.startswith("set_typebox_heights:"):
+                params = message[len("set_typebox_heights:"):].split(":")
+                if len(params) == 2:
+                    typebox_min_height = int(params[0])
+                    typebox_max_height = int(params[1])
+                    print(f"Updated min_height to {typebox_min_height}, max_height to {typebox_max_height}")
+                    return (True, None)
     except Exception as e:
         print(f"Error in handle_pycmd: {e}")
     return handled
@@ -145,115 +155,66 @@ def typeboxAnsQuestionFilter(self, buf: str) -> str:
         self.typeboxAnsPat,
         """
 <center>
-<form id="languageForm" onsubmit="event.preventDefault(); updateLanguage();" class="language-form">
-    <label for="language">Language:</label>
-    <input type="text" id="language" name="language" placeholder="Enter programming language (e.g. py, cpp, js)">
-    <button type="submit">Submit</button>
-</form>
-<br><br>
-<textarea id=typeans class=textbox-input onkeydown="typeboxAns(event);" style="font-family: '%s'; font-size: %spx;"></textarea>
+<details class="settings-dropdown">
+    <summary>Typebox Settings</summary>
+    <div class="settings-content">
+        <form id="languageForm" onsubmit="event.preventDefault(); updateLanguage();" class="language-form">
+            <label for="language">Programming Language:</label>
+            <input type="text" id="language" name="language" placeholder="Enter programming language (e.g. py, cpp, js)">
+            <button type="submit">Submit</button>
+        </form>
+
+        <div class="settings-grid">
+            <div class="height-adjustment">
+                <label for="heightBehaviour">Height Adjustment Behaviour:</label>
+                <div class="radio-group">
+                    <label>
+                        <input type="radio" name="heightBehaviour" value="update" checked>
+                        Update both values
+                        <span class="helper-text">(i.e. if min > max, both become min)</span>
+                    </label>
+                    <label>
+                        <input type="radio" name="heightBehaviour" value="revert">
+                        Revert invalid changes
+                        <span class="helper-text">(i.e. if min > max, revert to last valid value)</span>
+                    </label>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label for="customMinHeight">Min Height (px):</label>
+                <input type="number" id="customMinHeight" min="100" max="600" value="%s" class="height-input">
+            </div>
+
+            <div class="setting-item">
+                <label for="customHeight">Height (px):</label>
+                <span id="customHeight" class="height-input" style="background: none; background-color: #e0f7fa;"></span>
+            </div>
+
+            <div class="setting-item">
+                <label for="customMaxHeight">Max Height (px):</label>
+                <input type="number" id="customMaxHeight" min="200" max="1200" value="%s" class="height-input">
+            </div>
+
+            <div class="scroll-controls">
+                <label><input type="checkbox" id="scrollMode"> Enable Scroll</label>
+            </div>
+        </div>
+    </div>
+</details>
+
+<br>
+<textarea id=typeans class=textbox-input onkeydown="typeboxAns(event);" style="min-height: %spx; max-height: %spx; font-family: '%s'; font-size: %spx;"></textarea>
 </center>
+
+<style>
+%s
+</style>
 <script>
-if (typeof currentLanguage === 'undefined') {
-    // Define currentLanguage as a global variable
-    // Track current language setting
-    var currentLanguage = ''; // Define only if not already declared
-}
-
-function updateLanguage() {
-    const languageInput = document.getElementById('language');
-    const language = languageInput.value.trim().toLowerCase();
-    
-    if (language) {
-        currentLanguage = language; // Update the tracked language
-        pycmd("set_typebox_language:" + language);
-        // Clear the input field
-        languageInput.value = '';
-        // Provide visual feedback
-        const button = document.querySelector('.language-form button');
-        const originalText = button.textContent;
-        button.textContent = 'Updated!';
-        button.style.backgroundColor = '#4CAF50';
-        setTimeout(() => {
-            button.textContent = originalText;
-            button.style.backgroundColor = '';
-        }, 1500);
-    }
-}
-
-function typeboxAns(event) {
-    const textarea = document.getElementById('typeans');
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-    const tabCharacter = "%s";
-    const newLineMarker = `\n`;
-    if (event.key == "Enter") {
-        if (event.ctrlKey) {
-            /* Ctrl+Enter submits the answer*/
-            pycmd("ans");
-        } else {
-            if (currentLanguage !== 'none' && currentLanguage !== '') {
-                // Regular Enter: insert new line and preserve indentation
-                //event.preventDefault();
-                const lineStart = text.lastIndexOf(newLineMarker, start - 1) + 1;
-                let indent = '';
-                for (let i = lineStart; i < start; i++) {
-                    const currentChar = text[i];
-                    if (currentChar === tabCharacter || currentChar === ' ') {
-                        indent += currentChar;
-                    } else {
-                        break;
-                    }
-                }
-                if (indent) {
-                    event.preventDefault(); // Prevent default newline
-                    textarea.value = text.substring(0, start) + newLineMarker + indent + text.substring(start);
-                    textarea.selectionStart = textarea.selectionEnd = start + 1 + indent.length;
-                }
-            }
-        }
-    } else if (event.key == "Tab") {
-        // for tabbing both ways
-        event.preventDefault(); // Prevent default tab behavior
-                
-        if (event.shiftKey) {
-            // Check for spaces first
-            let spacesToRemove = 0;
-            let i = start - 1;
-
-            // Count consecutive spaces backwards until tab or non-space
-            while (i >= 0 && text[i] === ' ') {
-                if (spacesToRemove >= 8) {
-                    break;
-                }
-                spacesToRemove++;
-                i--;
-            }
-
-            // If we found spaces and they're equivalent to a tab (or partial tab)
-            if (spacesToRemove > 0) {
-                // Remove up to 4 spaces (tab equivalent)
-                const removeCount = spacesToRemove > 8 ? 8 : spacesToRemove; //Math.min(spacesToRemove, 4);
-                textarea.value = text.substring(0, start - removeCount) + text.substring(start); //beforeCursor.slice(0, -removeCount) + text.substring(start);
-                textarea.selectionStart = textarea.selectionEnd = start - removeCount;
-            } else if (textarea.value[start - 1] == tabCharacter) {
-                // Check for tabs, remove one
-                textarea.value = textarea.value.substring(0, start - 1) + textarea.value.substring(end);
-                // Move cursor before the inserted spaces
-                textarea.selectionStart = textarea.selectionEnd = start - tabCharacter.length;
-            }
-        } else {
-            // Tab: insert one tab character before cursor
-            textarea.value = textarea.value.substring(0, start) + tabCharacter + textarea.value.substring(end);
-            // Move cursor after the inserted spaces
-            textarea.selectionStart = textarea.selectionEnd = start + tabCharacter.length;
-        }
-    }
-}
+%s
 </script>
 """
-        % (self.typeFont, self.typeSize, TAB_CHARACTER),
+        % (typebox_min_height, typebox_max_height, typebox_min_height, typebox_max_height, self.typeFont, self.typeSize, 
+           css_content, js_content),
         buf,
     )
 

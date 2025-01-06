@@ -1,0 +1,235 @@
+/* for typebox */
+#typeans {
+    overflow-y: hidden;
+    resize: none;
+}
+
+/* for language form */
+.language-form {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    width: 100%;
+    margin: 0 auto 20px;
+    padding: 20px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+}
+
+.language-form label {
+    font-size: 14px;
+    color: #555;
+    font-weight: 500;
+    white-space: normal;
+}
+
+#language {
+    flex: 1;
+    box-sizing: border-box;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+
+#language:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+    outline: none;
+}
+
+#languageForm button[type="submit"] {
+    background: none;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+#languageForm button[type="submit"]:hover {
+    background-color: #45a049;
+}
+
+#languageForm button[type="submit"]:active {
+    background-color: #3d8b40;
+    transform: translateY(1px);
+}
+
+/* for height input settings */
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    width: 100%;
+    margin: 20px auto 0;
+    padding: 20px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+}
+
+.setting-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.setting-item label {
+    font-size: 14px;
+    color: #555;
+    font-weight: 500;
+}
+
+.height-input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.height-input:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+    outline: none;
+}
+
+.height-input[disabled] {
+    opacity: 0.8;
+}
+
+.height-input:not([disabled]) {
+    opacity: 1;
+}
+
+/* for scroll controls */
+.scroll-controls {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+}
+
+/* Height adjustment radio selection */
+.height-adjustment {
+    grid-column: 1 / -1;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.radio-group label:hover {
+    background-color: #f0f0f0;
+}
+
+.radio-group input[type="radio"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #4CAF50;
+    border-radius: 50%;
+    margin: 0;
+    position: relative;
+    cursor: pointer;
+}
+
+.radio-group input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background-color: #4CAF50;
+    border-radius: 50%;
+}
+
+.helper-text {
+    font-size: 12px;
+    color: #666;
+    margin-left: 4px;
+}
+
+/* Settings dropdown */
+.settings-dropdown {
+    width: 100%;
+    margin-bottom: 10px;
+    max-width: 800px;
+}
+.settings-dropdown summary {
+    cursor: pointer;
+    padding: 8px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+}
+.settings-dropdown summary:hover {
+    background-color: #e0e0e0;
+}
+.settings-content {
+    padding: 20px 20px 25px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-top: 5px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Responsive adjustments for very narrow screens */
+@media (max-width: 550px) {
+    .language-form {
+        flex-direction: column;
+        align-items: stretch;
+        box-sizing: border-box;
+    }
+
+    .language-form #language {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .language-form button[type="submit"] {
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .settings-grid {
+        grid-template-columns: 1fr;
+    }
+}
