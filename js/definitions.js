@@ -27,8 +27,12 @@ var lastValidValues = {
     max: document.getElementById('customMaxHeight').value
 };
 
-const tabCharacter = "\t";
-const newLineMarker = `\n`;
+if (typeof tabCharacter === 'undefined') {
+    const tabCharacter = "\t";
+}
+if (typeof newLineMarker === 'undefined') {
+    const newLineMarker = `\n`;
+}
 
 // Add scroll mode state tracking
 if (typeof isScrollModeOn === 'undefined') {
@@ -36,4 +40,9 @@ if (typeof isScrollModeOn === 'undefined') {
     var isScrollModeOn = scrollMode.checked;
 } else {
     document.getElementById('scrollMode').checked = isScrollModeOn;
+}
+
+// Add behavior tracking
+if (typeof currentHeightBehaviour === 'undefined') {
+    var currentHeightBehaviour = document.querySelector('input[name="heightBehaviour"]:checked')?.value;
 }

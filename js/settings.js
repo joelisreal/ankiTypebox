@@ -186,6 +186,9 @@ function InitializeHeightHandlers() {
         // Attach new handlers with proper type
         attachHandler(minHeightInput, minHeightInput.min, minHeightInput.max, 'min', behaviour);
         attachHandler(maxHeightInput, maxHeightInput.min, maxHeightInput.max, 'max', behaviour);
+
+        // Update current height behaviour
+        currentHeightBehaviour = behaviour;
     }
 
     // Add change listeners to radio buttons
@@ -195,12 +198,18 @@ function InitializeHeightHandlers() {
             removeAllNotifications();
             showNotification(`Height behaviour set to ${e.target.value}.`, 'green', 'white');
         });
+
+        // Set radio button state based on current behavior
+        if (radio.value === currentHeightBehaviour) {
+            radio.checked = true;
+        }
     });
 
-    // Initialize with default selection
-    const defaultBehaviour = document.querySelector('input[name="heightBehaviour"]:checked').value;
-    updateHandlers(defaultBehaviour);
-    showNotification(`Height behaviour set to ${defaultBehaviour}.`, 'green', 'white');
+    // Initialize handler with current behavior
+    const currentBehaviour = document.querySelector('input[name="heightBehaviour"]:checked').value;
+    updateHandlers(currentBehaviour);
+    removeAllNotifications();
+    showNotification(`Height behaviour set to ${currentBehaviour}.`, 'green', 'white');
 }
 // Call on page load
 InitializeHeightHandlers();
