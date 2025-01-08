@@ -4,6 +4,9 @@
 
 An enhanced text input add-on for Anki that provides a multi-line input experience, particularly optimized for programming code review and technical content.
 
+![Anki Typebox interface in dark mode](img/darkmode.png)
+![Anki Typebox interface in light mode](img/lightmode.png)
+
 ## Overview
 
 Anki Typebox enhances Anki's built-in type-in-the-answer feature by providing a full-featured text area that supports:
