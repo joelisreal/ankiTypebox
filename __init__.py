@@ -187,7 +187,7 @@ def typeboxAnsQuestionFilter(self, buf: str) -> str:
 
             <div class="setting-item">
                 <label for="customHeight">Height (px):</label>
-                <span id="customHeight" class="height-input" style="background: none; background-color: #e0f7fa;"></span>
+                <span id="customHeight" class="height-input"></span>
             </div>
 
             <div class="setting-item">

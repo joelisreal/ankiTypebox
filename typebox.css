@@ -1,3 +1,38 @@
+/* Base variables for theming */
+:root {
+    --bg-primary: #f5f5f5;
+    --bg-secondary: #f0f0f0;
+    --bg-tertiary: #e0e0e0;
+    --bg-quaternary: #e0f7fa;
+    --text-primary: #555;
+    --text-secondary: #666;
+    --border-color: #ddd;
+    --accent-color: #4CAF50;
+    --accent-hover: #45a049;
+    --accent-active: #3d8b40;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --input-bg: #ffffff;
+    --textarea-bg: #ffffff;
+}
+
+/* Dark mode variables */
+.nightMode {
+    --bg-primary: #2d2d2d;
+    --bg-secondary: #363636;
+    --bg-tertiary: #404040;
+    --bg-quaternary: #404849;
+    /* --bg-quaternary: #424242; */
+    --text-primary: #e0e0e0;
+    --text-secondary: #b0b0b0;
+    --border-color: #505050;
+    --accent-color: #66bb6a;
+    --accent-hover: #81c784;
+    --accent-active: #4caf50;
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --input-bg: #363636;
+    --textarea-bg: #363636;
+}
+
 /* for typebox */
 #typeans {
     overflow-y: hidden;
@@ -12,15 +47,14 @@
     width: 100%;
     margin: 0 auto 20px;
     padding: 20px;
-    background: #f5f5f5;
+    background: var(--bg-primary);
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px var(--shadow-color);
     box-sizing: border-box;
 }
 
 .language-form label {
     font-size: 14px;
-    color: #555;
     font-weight: 500;
     white-space: normal;
 }
@@ -36,14 +70,14 @@
 }
 
 #language:focus {
-    border-color: #4CAF50;
+    border-color: var(--accent-color);
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
     outline: none;
 }
 
 #languageForm button[type="submit"] {
     background: none;
-    background-color: #4CAF50;
+    background-color: var(--accent-color);
     color: white;
     border: none;
     padding: 8px 20px;
@@ -54,11 +88,11 @@
 }
 
 #languageForm button[type="submit"]:hover {
-    background-color: #45a049;
+    background-color: var(--accent-hover);
 }
 
 #languageForm button[type="submit"]:active {
-    background-color: #3d8b40;
+    background-color: var(--accent-active);
     transform: translateY(1px);
 }
 
@@ -70,9 +104,9 @@
     width: 100%;
     margin: 20px auto 0;
     padding: 20px;
-    background: #f5f5f5;
+    background: var(--bg-primary);
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px var(--shadow-color);
     box-sizing: border-box;
 }
 
@@ -84,7 +118,6 @@
 
 .setting-item label {
     font-size: 14px;
-    color: #555;
     font-weight: 500;
 }
 
@@ -97,8 +130,13 @@
     transition: all 0.2s;
 }
 
+#customHeight {
+    background: none;
+    background-color: var(--bg-quaternary);
+}
+
 .height-input:focus {
-    border-color: #4CAF50;
+    border-color: var(--accent-color);
     box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
     outline: none;
 }
@@ -127,7 +165,6 @@
 .height-adjustment {
     grid-column: 1 / -1;
     padding: 15px;
-    background: #f5f5f5;
     border-radius: 6px;
     margin-bottom: 10px;
     width: 100%;
@@ -155,14 +192,14 @@
 }
 
 .radio-group label:hover {
-    background-color: #f0f0f0;
+    background-color: var(--bg-secondary);
 }
 
 .radio-group input[type="radio"] {
     appearance: none;
     width: 18px;
     height: 18px;
-    border: 2px solid #4CAF50;
+    border: 2px solid var(--accent-color);
     border-radius: 50%;
     margin: 0;
     position: relative;
@@ -177,13 +214,13 @@
     transform: translate(-50%, -50%);
     width: 10px;
     height: 10px;
-    background-color: #4CAF50;
+    background-color: var(--accent-color);
     border-radius: 50%;
 }
 
 .helper-text {
     font-size: 12px;
-    color: #666;
+    color: var(--text-secondary);
     margin-left: 4px;
 }
 
@@ -192,15 +229,16 @@
     width: 100%;
     margin-bottom: 10px;
     max-width: 800px;
+    color: var(--text-primary);
 }
 .settings-dropdown summary {
     cursor: pointer;
     padding: 8px;
-    background-color: #f0f0f0;
+    background-color: var(--bg-secondary);
     border-radius: 4px;
 }
 .settings-dropdown summary:hover {
-    background-color: #e0e0e0;
+    background-color: var(--bg-tertiary);
 }
 .settings-content {
     padding: 20px 20px 25px;
