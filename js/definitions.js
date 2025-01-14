@@ -28,10 +28,10 @@ var lastValidValues = {
 };
 
 if (typeof tabCharacter === 'undefined') {
-    const tabCharacter = "\t";
+    var tabCharacter = "\t";
 }
 if (typeof newLineMarker === 'undefined') {
-    const newLineMarker = `\n`;
+    var newLineMarker = `\n`;
 }
 
 // Add scroll mode state tracking

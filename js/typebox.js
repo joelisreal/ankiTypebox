@@ -11,7 +11,6 @@ function typeboxAns(event) {
             if (currentLanguage !== 'none' && currentLanguage !== '') {
                 // Regular Enter: insert new line and preserve indentation
                 //event.preventDefault();
-                showNotification("currentLang", 'red', 'white');
                 const lineStart = text.lastIndexOf(newLineMarker, start - 1) + 1;
                 let indent = '';
                 for (let i = lineStart; i < start; i++) {
