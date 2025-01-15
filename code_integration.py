@@ -16,9 +16,9 @@ typebox_js = read_js_file('typebox.js')
 settings_js = read_js_file('settings.js')
 
 js_content = (
-    definitions_js
+    notification_js
     + "\n\n"
-    + notification_js
+    + definitions_js
     + "\n\n"
     + text_area_js
     + "\n\n"

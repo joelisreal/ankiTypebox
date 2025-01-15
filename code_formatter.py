@@ -4,6 +4,10 @@ import re
 LANGUAGE_ALIASES = {
     'py': 'python',
     'python': 'python',
+    'py3': 'python',
+    'py2': 'python',
+    'python3': 'python',
+    'python2': 'python',
     'js': 'javascript',
     'javascript': 'javascript',
     'ts': 'typescript',

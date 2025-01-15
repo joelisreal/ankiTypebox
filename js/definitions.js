@@ -18,7 +18,19 @@ if (typeof currentLanguage === 'undefined') {
     // Define currentLanguage as a global variable
     // Track current language setting
     var currentLanguage = 'none';
+} else {
+    // Remove existing notifications if it's not first time the code is being run
+    removeAllNotifications();
 }
+if (typeof language_field === 'undefined') {
+    var language_field = 'none';
+}
+// If invalid, then add invalid notification
+if (language_field == 'invalid') {
+    showNotification('Invalid language field value. Please check your settings.', 'red', 'white');
+}
+showNotification('Programming Language set to ' + currentLanguage, 'green', 'white');
+
 
 // We need to track last valid values for both inputs
 // in order to restore them if the user enters invalid values

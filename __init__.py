@@ -128,8 +128,23 @@ def typeboxAnsQuestionFilter(self, buf: str) -> str:
     # loop through fields for a match
     self.typeCorrect = None
     fields = self.card.model()["flds"]
-    # language_field = next((f for f in fields if f["name"] == language_param), '')
-    # self.typebox_language = note[language_field["name"]] if language_field else None
+    note = self.card.note()
+    language_param = "Language"
+
+    # Check for language field and set typebox_language
+    global typebox_language
+    language_field = next((f for f in fields if f["name"].lower() == language_param.lower()), '')
+    if language_field:
+        lang = note[language_field["name"]]
+        normalized_lang = get_normalized_language(lang.lower())
+        if normalized_lang != 'invalid':
+            typebox_language = normalized_lang
+            mw.reviewer.web.eval(f"""
+                currentLanguage = '{typebox_language}';
+            """)
+        mw.reviewer.web.eval(f"""
+                language_field = '{normalized_lang}';
+            """)
 
     for f in fields:
         if f["name"] == fld:

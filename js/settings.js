@@ -208,7 +208,8 @@ function InitializeHeightHandlers() {
     // Initialize handler with current behavior
     const currentBehaviour = document.querySelector('input[name="heightBehaviour"]:checked').value;
     updateHandlers(currentBehaviour);
-    removeAllNotifications();
+
+    // No need for remove here because it's being called in definitions.js
     showNotification(`Height behaviour set to ${currentBehaviour}.`, 'green', 'white');
 }
 // Call on page load
